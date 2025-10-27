@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <!-- Target .NET 8 for modern, long‑term support -->
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Enable nullable reference types and implicit using directives -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Set the default namespace to preserve the original names. This allows the source files
+         to retain their existing DocumentSummarizer.API namespace declarations. -->
+    <RootNamespace>DocumentSummarizer.API</RootNamespace>
+    <!-- Keep the assembly name consistent with the original project to avoid breaking namespace assumptions -->
+    <AssemblyName>DocumentSummarizer.API</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Declare package references here when you extend the template. -->
+  <ItemGroup>
+    <!-- Example packages; uncomment and adjust versions as needed -->
+    <!-- <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0" /> -->
+    <!-- <PackageReference Include="Azure.Search.Documents" Version="1.0.0" /> -->
+  </ItemGroup>
+
+</Project>
