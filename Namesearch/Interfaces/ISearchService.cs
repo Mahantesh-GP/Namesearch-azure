@@ -13,6 +13,6 @@ namespace DocumentSummarizer.API.Interfaces
         /// </summary>
         /// <param name="request">The user's query request.</param>
         /// <returns>A <see cref="ResponseSummary"/> containing the summarised search results.</returns>
-        Task<ResponseSummary> SummariseAsync(UserQueryRequest request);
+        Task<List<ResponseSummary>> QueryDocumentAsync(UserQueryRequest request);
     }
 }

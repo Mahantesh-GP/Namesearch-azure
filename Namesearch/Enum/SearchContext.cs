@@ -1,24 +1,19 @@
 namespace DocumentSummarizer.API.Enum
 {
-    /// <summary>
-    /// Identifies the context within which a search should be executed. These values can be
-    /// extended to tune search behaviour across different fields or scopes.
-    /// </summary>
     public enum SearchContext
     {
-        /// <summary>
-        /// Search across all available fields.
-        /// </summary>
-        All,
+        dgssearchservice_SemanticVector,
+        dgssearchservice_SemanticText,
 
-        /// <summary>
-        /// Restrict the search to document titles only.
-        /// </summary>
-        Title,
+        dgssearchservice_SimpleText,
+        dgssearchservice_Semantic,
+        dgssearchservice_Hybrid,
+       
+        nsaaisearchenhancedservice_Hybrid,
+        nsaaisearchenhancedservice_SemanticVector,
 
-        /// <summary>
-        /// Restrict the search to document content only.
-        /// </summary>
-        Content
+        azuresearchservices_Hybrid,
+        msaaisearchservices_Hybrid,
+        nsaaisearchservices_Hybrid
     }
 }

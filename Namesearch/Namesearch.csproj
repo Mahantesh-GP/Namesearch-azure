@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- Target .NET 8 for modern, long‑term support -->
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <!-- Enable nullable reference types and implicit using directives -->
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -14,10 +14,12 @@
   </PropertyGroup>
 
   <!-- Declare package references here when you extend the template. -->
-  <ItemGroup>
-    <!-- Example packages; uncomment and adjust versions as needed -->
-    <!-- <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0" /> -->
-    <!-- <PackageReference Include="Azure.Search.Documents" Version="1.0.0" /> -->
-  </ItemGroup>
+	<ItemGroup>
+		<!-- Keep only the packages used by the app. Others were removed as unused. -->
+		<PackageReference Include="Azure.Search.Documents" Version="11.7.0-beta.3" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
+		<PackageReference Include="Microsoft.OpenApi" Version="1.6.17" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.0" />
+	</ItemGroup>
 
 </Project>

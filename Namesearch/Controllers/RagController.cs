@@ -1,39 +1,54 @@
+using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using DocumentSummarizer.API.Interfaces;
 using DocumentSummarizer.API.Models;
-using Microsoft.AspNetCore.Mvc;
+using DocumentSummarizer.API.Services;
 
 namespace DocumentSummarizer.API.Controllers
 {
-    /// <summary>
-    /// A simple REST controller that exposes endpoints for retrieving summarised search results.
-    /// </summary>
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class RagController : ControllerBase
     {
-        private readonly ISearchService _searchService;
+        private readonly IQueryDocumentService _queryService;
+        private readonly ISearchService _service;
+        private readonly ILogger<RagController> _logger;
+    // Removed unused concrete service to keep DI minimal
 
-        public RagController(ISearchService searchService)
+        public RagController(
+            IQueryDocumentService queryService,
+            ISearchService service,
+            ILogger<RagController> logger)
         {
-            _searchService = searchService;
+            _queryService = queryService;
+            _service = service;
+            _logger = logger;
         }
 
-        /// <summary>
-        /// Summarises documents relevant to the provided query.
-        /// </summary>
-        /// <param name="request">The user's search and summarisation request.</param>
-        /// <returns>A summary of the relevant documents.</returns>
-        [HttpPost("summarize")]
-        public async Task<ActionResult<ResponseSummary>> Summarize([FromBody] UserQueryRequest request)
+        [HttpPost("query")]
+        public async Task<IActionResult> QueryDocument([FromBody] UserQueryRequest request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Query))
+            _logger.LogInformation("QueryDocument started with query: {query}", request.Query);
+
+            if (request == null || string.IsNullOrEmpty(request.Query))
             {
-                return BadRequest("Query cannot be empty.");
+                _logger.LogWarning("Query cannot be empty");
+                return BadRequest("Query cannot be empty");
             }
 
-            var result = await _searchService.SummariseAsync(request);
-            return Ok(result);
+            try
+            {
+                var result = await _service.QueryDocumentAsync(request);
+                _logger.LogInformation("QueryDocument completed successfully for query: {query}", request.Query);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error querying document for query: {query}", request.Query);
+                return StatusCode(500, "Internal server error");
+            }
         }
     }
 }

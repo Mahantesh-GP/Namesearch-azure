@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using Azure.Search.Documents;
+using Azure.Search.Documents.Models;
 using DocumentSummarizer.API.Models;
 
 namespace DocumentSummarizer.API.Interfaces
@@ -14,6 +16,6 @@ namespace DocumentSummarizer.API.Interfaces
         /// </summary>
         /// <param name="request">The user's search request containing the query and optional filters.</param>
         /// <returns>A <see cref="ResponseSummary"/> describing the search results.</returns>
-        Task<ResponseSummary> SearchAsync(UserQueryRequest request);
+        Task<(SearchResults<SearchDocument> results, string aliases)> RunHybridSearchAsync(UserQueryRequest request);
     }
 }

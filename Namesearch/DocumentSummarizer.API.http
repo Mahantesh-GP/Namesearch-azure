@@ -3,16 +3,19 @@
 # This file contains example HTTP requests for testing the Document Summarizer API using
 # Visual Studio's built‑in HTTP client or the REST Client extension for VS Code.
 
-@hostname = https://localhost:5001
+@hostname = http://localhost:64347
 
 ### Health check
-GET {{hostname}}/
+GET {{hostname}}/healthz
 
 ### Summarize documents
 # Replace the payload with an actual user query when implementing the service.
-POST {{hostname}}/api/rag/summarize
+POST {{hostname}}/api/rag/query
 Content-Type: application/json
 
 {
-  "query": "Give me a summary of climate change research in 2024"
+  "query": "john doe",
+  "searchType": "semantic_hybrid",
+  "page": 1,
+  "pageSize": 5
 }

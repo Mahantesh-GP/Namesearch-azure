@@ -14,6 +14,6 @@ namespace DocumentSummarizer.API.Interfaces
         /// </summary>
         /// <param name="request">The request describing what the user would like to know.</param>
         /// <returns>A <see cref="ResponseSummary"/> containing the summarised response.</returns>
-        Task<ResponseSummary> GetDocumentSummaryAsync(UserQueryRequest request);
+      Task<List<ResponseSummary>> QueryHybridAsync(UserQueryRequest request);
     }
 }
