@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "appServicePlanSku": {
+      "value": "B1"
+    },
+    "searchServiceName": {
+      "value": "YOUR_SEARCH_SERVICE_NAME"
+    },
+    "searchServiceEndpoint": {
+      "value": "https://YOUR_SEARCH_SERVICE_NAME.search.windows.net"
+    },
+    "searchIndexName": {
+      "value": "YOUR_INDEX_NAME"
+    }
+  }
+}

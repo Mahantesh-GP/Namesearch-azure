@@ -1,0 +1,129 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using Namesearch.Web.Components.Shared
+@using Namesearch.Web.Models
+@using Namesearch.Web.Services
+@inject ISearchApiClient SearchApiClient
+
+<PageTitle>Name Search</PageTitle>
+
+<div class="search-page">
+    <div class="search-container">
+        <div class="header">
+            <h1>Name Search</h1>
+            <p class="subtitle">Search through documents and records</p>
+        </div>
+
+        <div class="search-controls">
+            <SearchBar 
+                Value="@searchQuery"
+                ValueChanged="@(value => searchQuery = value)"
+                OnSearchClicked="@PerformSearch"
+                IsSearching="@isSearching"
+                Placeholder="Enter name to search..." />
+
+            <div class="filters">
+                <FilterDropdown 
+                    TValue="string"
+                    Label="County"
+                    Placeholder="All Counties"
+                    Value="@selectedCounty"
+                    ValueChanged="@(value => selectedCounty = value)"
+                    Options="@countyOptions" />
+
+                <FilterDropdown 
+                    TValue="bool?"
+                    Label="Individual Flag"
+                    Placeholder="All Types"
+                    Value="@selectedIndividualFlag"
+                    ValueChanged="@(value => selectedIndividualFlag = value)"
+                    Options="@individualFlagOptions" />
+
+                @if (!string.IsNullOrEmpty(selectedCounty) || selectedIndividualFlag.HasValue)
+                {
+                    <button class="clear-filters-btn" @onclick="ClearFilters">
+                        Clear Filters
+                    </button>
+                }
+            </div>
+        </div>
+
+        <SearchResults 
+            Results="@searchResponse.Results"
+            TotalCount="@searchResponse.TotalCount"
+            Page="@currentPage"
+            PageSize="@pageSize"
+            IsLoading="@isSearching"
+            HasSearched="@hasSearched"
+            OnPageChanged="@HandlePageChanged" />
+    </div>
+</div>
+
+@code {
+    private string searchQuery = string.Empty;
+    private string selectedCounty = string.Empty;
+    private bool? selectedIndividualFlag = null;
+    private SearchResponse searchResponse = new();
+    private bool isSearching = false;
+    private bool hasSearched = false;
+    private int currentPage = 1;
+    private int pageSize = 10;
+
+    private List<FilterOption<string>> countyOptions = new()
+    {
+        new FilterOption<string> { Value = "Miami-Dade", Text = "Miami-Dade" },
+        new FilterOption<string> { Value = "Broward", Text = "Broward" },
+        new FilterOption<string> { Value = "Palm Beach", Text = "Palm Beach" },
+        new FilterOption<string> { Value = "Orange", Text = "Orange" },
+        new FilterOption<string> { Value = "Hillsborough", Text = "Hillsborough" }
+    };
+
+    private List<FilterOption<bool?>> individualFlagOptions = new()
+    {
+        new FilterOption<bool?> { Value = true, Text = "Individual" },
+        new FilterOption<bool?> { Value = false, Text = "Business" }
+    };
+
+    private async Task PerformSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+            return;
+
+        isSearching = true;
+        currentPage = 1;
+        hasSearched = true;
+
+        try
+        {
+            var request = new SearchRequest
+            {
+                Query = searchQuery,
+                County = selectedCounty,
+                IndividualFlag = selectedIndividualFlag,
+                Page = currentPage,
+                PageSize = pageSize
+            };
+
+            searchResponse = await SearchApiClient.SearchAsync(request);
+        }
+        finally
+        {
+            isSearching = false;
+        }
+    }
+
+    private async Task HandlePageChanged(int newPage)
+    {
+        if (newPage < 1 || newPage > Math.Ceiling((double)searchResponse.TotalCount / pageSize))
+            return;
+
+        currentPage = newPage;
+        await PerformSearch();
+    }
+
+    private void ClearFilters()
+    {
+        selectedCounty = string.Empty;
+        selectedIndividualFlag = null;
+    }
+}

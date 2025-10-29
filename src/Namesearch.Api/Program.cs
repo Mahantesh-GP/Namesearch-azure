@@ -6,6 +6,8 @@ using Namesearch.Application;
 using Namesearch.Application.Contracts;
 using Namesearch.Application.Features.Search;
 using Namesearch.Infrastructure;
+using Namesearch.Web.Components;
+using Namesearch.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,24 +18,36 @@ builder.Services.AddSwaggerGen();
 // Health checks
 builder.Services.AddHealthChecks();
 
-// CORS
+// CORS - updated for Blazor
 builder.Services.AddCors(options =>
 {
 	options.AddDefaultPolicy(policy =>
 	{
-		policy.AllowAnyOrigin()
+		policy.WithOrigins("https://localhost:*", "http://localhost:*")
 		      .AllowAnyMethod()
-		      .AllowAnyHeader();
+		      .AllowAnyHeader()
+		      .AllowCredentials();
 	});
 });
 
 // Problem details for standardized error responses
 builder.Services.AddProblemDetails();
 
+// Application and Infrastructure layers
 builder.Services.AddApplication();
 // Register validators from Application assembly
 builder.Services.AddValidatorsFromAssemblyContaining<Namesearch.Application.Validation.UserQueryRequestValidator>();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Blazor Server components
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+// HTTP Client for Blazor to call the API
+builder.Services.AddHttpClient<ISearchApiClient, SearchApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7000");
+});
 
 var app = builder.Build();
 
@@ -51,8 +65,16 @@ app.UseCors();
 // Health check endpoints
 app.MapHealthChecks("/healthz");
 
-app.MapGet("/", () => Results.Redirect("/swagger"));
+// Serve Blazor UI
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseAntiforgery();
 
+// Map Blazor components
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+
+// API endpoints
 // Search endpoint (CQRS + Validation)
 app.MapPost("/api/search", async ([FromBody] UserQueryRequest request, ISender sender, IValidator<UserQueryRequest> validator) =>
 {

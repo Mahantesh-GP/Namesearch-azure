@@ -1,0 +1,146 @@
+@namespace Namesearch.Web.Components.Shared
+@using Namesearch.Web.Models
+
+<div class="search-results">
+    @if (IsLoading)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Searching...</p>
+        </div>
+    }
+    else if (Results.Any())
+    {
+        <div class="results-header">
+            <h3>Found @TotalCount results</h3>
+            @if (TotalCount > PageSize)
+            {
+                <div class="pagination-info">
+                    Page @Page of @((int)Math.Ceiling((double)TotalCount / PageSize))
+                </div>
+            }
+        </div>
+
+        <div class="results-list">
+            @foreach (var result in Results)
+            {
+                <div class="result-card">
+                    <div class="result-header">
+                        <h4 class="result-title">@result.FileName</h4>
+                        @if (!string.IsNullOrEmpty(result.Score))
+                        {
+                            <span class="result-score">Score: @result.Score</span>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(result.Summary))
+                    {
+                        <p class="result-summary">@result.Summary</p>
+                    }
+
+                    <div class="result-details">
+                        @if (!string.IsNullOrEmpty(result.DocumentFields?.BorrowerName))
+                        {
+                            <div class="detail-item">
+                                <span class="detail-label">Borrower:</span>
+                                <span class="detail-value">@result.DocumentFields.BorrowerName</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(result.DocumentFields?.PropertyAddress))
+                        {
+                            <div class="detail-item">
+                                <span class="detail-label">Property:</span>
+                                <span class="detail-value">@result.DocumentFields.PropertyAddress</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(result.DocumentFields?.PolicyNumber))
+                        {
+                            <div class="detail-item">
+                                <span class="detail-label">Policy:</span>
+                                <span class="detail-value">@result.DocumentFields.PolicyNumber</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(result.DocumentFields?.ClosingDate))
+                        {
+                            <div class="detail-item">
+                                <span class="detail-label">Closing Date:</span>
+                                <span class="detail-value">@result.DocumentFields.ClosingDate</span>
+                            </div>
+                        }
+                    </div>
+
+                    @if (result.Captions.Any())
+                    {
+                        <div class="result-captions">
+                            @foreach (var caption in result.Captions.Take(2))
+                            {
+                                <div class="caption">@caption</div>
+                            }
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(result.FileUrl))
+                    {
+                        <div class="result-actions">
+                            <a href="@result.FileUrl" target="_blank" class="view-document-btn">
+                                View Document
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        @if (TotalCount > PageSize)
+        {
+            <div class="pagination">
+                <button class="pagination-btn" @onclick="() => OnPageChanged.InvokeAsync(Page - 1)" disabled="@(Page <= 1)">
+                    Previous
+                </button>
+                <span class="pagination-current">Page @Page</span>
+                <button class="pagination-btn" @onclick="() => OnPageChanged.InvokeAsync(Page + 1)" disabled="@(Page >= Math.Ceiling((double)TotalCount / PageSize))">
+                    Next
+                </button>
+            </div>
+        }
+    }
+    else if (HasSearched)
+    {
+        <div class="no-results">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <h3>No results found</h3>
+            <p>Try adjusting your search criteria or filters</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<SearchResult> Results { get; set; } = new();
+
+    [Parameter]
+    public int TotalCount { get; set; }
+
+    [Parameter]
+    public int Page { get; set; } = 1;
+
+    [Parameter]
+    public int PageSize { get; set; } = 10;
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public bool HasSearched { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnPageChanged { get; set; }
+}

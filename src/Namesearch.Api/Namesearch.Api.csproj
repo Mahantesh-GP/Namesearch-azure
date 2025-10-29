@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Namesearch.Application\Namesearch.Application.csproj" />
     <ProjectReference Include="..\Namesearch.Infrastructure\Namesearch.Infrastructure.csproj" />
+    <ProjectReference Include="..\Namesearch.Web\Namesearch.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

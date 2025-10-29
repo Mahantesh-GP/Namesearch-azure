@@ -1,83 +1,290 @@
-# Namesearch (modernized)
+# Namesearch - Modern Name Search Application
 
 [![.NET Build & Test](https://github.com/Mahantesh-GP/Namesearch-azure/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/Mahantesh-GP/Namesearch-azure/actions/workflows/dotnet.yml)
 
-This repository has been refactored to a Clean Architecture layout with SOLID-friendly separation of concerns, CQRS with MediatR, FluentValidation, and an Infrastructure adapter for Azure Cognitive Search.
+A modern, full-stack name search application built with Clean Architecture, featuring a Blazor Server UI and ASP.NET Core Web API, designed for deployment to Azure App Service.
 
-## New project structure
+## Features
 
-- `src/Namesearch.Domain` – core domain primitives (lightweight for now)
-- `src/Namesearch.Application` – use cases (CQRS, validators, abstractions)
-- `src/Namesearch.Infrastructure` – Azure Search implementation, options, DI
-- `src/Namesearch.Api` – minimal API, Swagger, composition root
-- `tests/Namesearch.UnitTests` – unit tests for validators and handlers
+- ✨ Modern, responsive Blazor UI with real-time search
+- 🔍 Advanced filtering (County, Individual Flag)
+- 🏗️ Clean Architecture with SOLID principles
+- 🎯 CQRS pattern with MediatR
+- ✅ FluentValidation for request validation
+- 🔐 Azure Search integration with Managed Identity support
+- 📦 Single deployment package (UI + API)
+- 🏥 Health checks and monitoring
+- 🎨 Reusable component design
 
-**Legacy `Namesearch/` and `Namesearch.Tests/` projects have been removed.**
+## Architecture
 
-## Quick start
+### Project Structure
 
-Prerequisites: .NET 8 SDK
+```
+src/
+├── Namesearch.Api/          # Main application - hosts both UI and API
+├── Namesearch.Web/          # Blazor Server UI components and pages
+├── Namesearch.Application/  # Business logic (CQRS handlers, validators)
+├── Namesearch.Infrastructure/ # External services (Azure Search)
+└── Namesearch.Domain/       # Domain models and primitives
 
-```powershell
-# from repo root
-dotnet build .\Namesearch.sln -c Debug
-dotnet run --project .\src\Namesearch.Api\Namesearch.Api.csproj
+tests/
+└── Namesearch.UnitTests/    # Unit tests
+
+infra/
+├── main.bicep              # Infrastructure as Code (Azure resources)
+└── main.parameters.json    # Deployment parameters
 ```
 
-Open:
+### Design Principles
 
-- Swagger: http://localhost:5000/swagger (or the port shown in console)
-- Health: http://localhost:5000/healthz
+- **Clean Architecture**: Clear separation between domain, application, infrastructure layers
+- **CQRS**: Command Query Responsibility Segregation with MediatR
+- **Dependency Injection**: All dependencies injected via ASP.NET Core DI
+- **Component-Based UI**: Reusable Blazor components following single responsibility
+- **Infrastructure as Code**: Bicep templates for reproducible deployments
 
-## Configuration
+## Quick Start
 
-Set your Azure Cognitive Search settings under the `AzureSearchServices` section (see `src/Namesearch.Api/appsettings.json`):
+### Prerequisites
+- .NET 8 SDK
+- Azure subscription (for deployment)
+- Azure AI Search service
 
+### Local Development
+
+1. **Clone the repository**
+```powershell
+git clone https://github.com/Mahantesh-GP/Namesearch-azure.git
+cd NamesearchTemplate
+```
+
+2. **Configure Azure Search**
+   
+   Update `src/Namesearch.Api/appsettings.Development.json`:
 ```json
 {
-  "AzureSearchServices": {
-    "Endpoint": "https://<your-search-service>.search.windows.net/",
-    "ApiKey": "<your-api-key>",
-    "IndexName": "hybrid"
+  "AzureSearch": {
+    "ServiceName": "your-search-service",
+    "Endpoint": "https://your-search-service.search.windows.net",
+    "IndexName": "your-index-name",
+    "ApiKey": "your-api-key"
   }
 }
 ```
 
-You can place secrets in `appsettings.Development.json` or user-secrets.
+3. **Build the solution**
+```powershell
+dotnet build
+```
 
-## API
+4. **Run the application**
+```powershell
+dotnet run --project src/Namesearch.Api/Namesearch.Api.csproj
+```
 
-- `GET /` – Redirects to Swagger UI
-- `GET /healthz` – Health check (returns 200 Healthy)
-- `POST /api/search` – Search endpoint
-  - Body: `{ "query": "John", "page": 1, "pageSize": 10 }`
-  - Returns a list of `ResponseSummary` objects
+5. **Open in browser**
+   - UI: https://localhost:7000 (or the port shown in console)
+   - API Swagger: https://localhost:7000/swagger
+   - Health Check: https://localhost:7000/healthz
 
-Validation is enforced via FluentValidation.
+## UI Components
 
-## Middleware features
+The application includes three main reusable components:
 
-- **Health checks**: `/healthz` endpoint for readiness/liveness probes
-- **CORS**: Default policy allows any origin/method/header (configurable)
-- **ProblemDetails**: Standardized error responses for exceptions and validation failures
+### SearchBar
+- Real-time search input with loading state
+- Enter key support
+- Disabled state during search
+
+### FilterDropdown
+- Generic, type-safe dropdown component
+- Supports string and bool? types
+- Custom styling with icons
+
+### SearchResults
+- Card-based result display
+- Pagination support
+- Document field highlighting
+- Loading and empty states
+
+See [Web UI README](src/Namesearch.Web/README.md) for detailed component documentation.
+
+## API Endpoints
+
+### POST /api/search
+Search for names in the index.
+
+**Request:**
+```json
+{
+  "query": "John Smith",
+  "selectedAppId": "",
+  "searchType": "semantic_hybrid",
+  "page": 1,
+  "pageSize": 10
+}
+```
+
+**Response:**
+```json
+[
+  {
+    "summary": "Document summary...",
+    "fileName": "doc123.pdf",
+    "documentFields": {
+      "borrowerName": "John Smith",
+      "propertyAddress": "123 Main St, Miami, FL",
+      "policyNumber": "POL-12345",
+      "closingDate": "2024-01-15"
+    },
+    "score": "0.95",
+    "captions": ["...relevant text..."]
+  }
+]
+```
+
+### GET /healthz
+Health check endpoint for monitoring.
+
+## Deployment to Azure
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
+
+### Quick Deploy
+
+1. **Update parameters**
+```powershell
+# Edit infra/main.parameters.json with your Azure Search details
+```
+
+2. **Create resource group**
+```powershell
+az group create --name rg-namesearch --location eastus
+```
+
+3. **Deploy infrastructure**
+```powershell
+az deployment group create `
+  --resource-group rg-namesearch `
+  --template-file infra/main.bicep `
+  --parameters infra/main.parameters.json
+```
+
+4. **Publish application**
+```powershell
+dotnet publish src/Namesearch.Api/Namesearch.Api.csproj -c Release -o ./publish
+Compress-Archive -Path ./publish/* -DestinationPath ./app.zip -Force
+
+az webapp deployment source config-zip `
+  --resource-group rg-namesearch `
+  --name <app-service-name> `
+  --src ./app.zip
+```
+
+## Configuration
+
+### Required Settings
+
+- `AzureSearch__ServiceName`: Azure Search service name
+- `AzureSearch__Endpoint`: Azure Search endpoint URL
+- `AzureSearch__IndexName`: Search index name
+- `AzureSearch__ApiKey`: API key (or use Managed Identity)
+- `ApiBaseUrl`: Application base URL
+
+### Managed Identity (Recommended)
+
+The Bicep template automatically enables System-Assigned Managed Identity. Grant the identity "Search Index Data Reader" role:
+
+```powershell
+az role assignment create `
+  --role "Search Index Data Reader" `
+  --assignee <principal-id> `
+  --scope <search-service-resource-id>
+```
 
 ## Testing
 
 ```powershell
-dotnet test .\tests\Namesearch.UnitTests\Namesearch.UnitTests.csproj
+# Run all tests
+dotnet test
+
+# Run with coverage
+dotnet test --collect:"XPlat Code Coverage"
 ```
 
-All tests run in-memory with mocked dependencies.
+## Middleware Features
 
-## Design notes
+- **Health Checks**: `/healthz` for readiness/liveness probes
+- **CORS**: Configured for Blazor SignalR support
+- **Problem Details**: Standardized error responses
+- **Exception Handling**: Global exception handling middleware
+- **Static Files**: Serves Blazor UI assets
+- **Antiforgery**: Protection for interactive Blazor components
 
-- CQRS via MediatR: features are defined as vertically-sliced request/handler pairs.
-- Clean DI boundaries: Application contains abstractions; Infrastructure provides implementations and is wired in the API.
-- Typed options with data annotations for Azure Search configuration.
-- Global properties (nullable, implicit usings) set in `Directory.Build.props`.
+## Technology Stack
 
-## Next steps
+- **Backend**: ASP.NET Core 8.0 (Minimal API)
+- **Frontend**: Blazor Server
+- **CQRS**: MediatR
+- **Validation**: FluentValidation
+- **Search**: Azure AI Search
+- **Infrastructure**: Azure App Service (Linux)
+- **IaC**: Bicep
+- **Testing**: xUnit, Moq, FluentAssertions
 
-- Add integration tests using WebApplicationFactory for the new API if desired.
-- Introduce structured logging (Serilog) or OpenTelemetry for tracing.
-- Add pagination metadata to responses (total count, page count).
+## Security Best Practices
+
+✅ HTTPS enforced  
+✅ Managed Identity for Azure services  
+✅ API key storage in configuration (not in code)  
+✅ CORS properly configured  
+✅ Antiforgery tokens for Blazor  
+✅ Input validation with FluentValidation  
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add/update tests
+5. Submit a pull request
+
+## Troubleshooting
+
+### UI not loading
+- Verify both projects are built
+- Check `ApiBaseUrl` configuration
+- Review browser console for errors
+
+### Search not working
+- Verify Azure Search credentials
+- Check search index exists
+- Review application logs
+
+### Build errors
+- Run `dotnet restore`
+- Ensure .NET 8.0 SDK is installed
+- Check all project references
+
+## Next Steps
+
+- [ ] Add authentication/authorization
+- [ ] Implement advanced search filters
+- [ ] Add export functionality
+- [ ] Dark mode support
+- [ ] Progressive Web App (PWA)
+- [ ] Integration tests with WebApplicationFactory
+- [ ] OpenTelemetry for distributed tracing
+- [ ] CI/CD pipeline with GitHub Actions
+
+## License
+
+This project is licensed under the MIT License.
+
+## Support
+
+For issues and questions:
+- Create an issue in this repository
+- Check existing documentation
+- Review Azure Search documentation

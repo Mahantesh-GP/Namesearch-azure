@@ -1,0 +1,58 @@
+@namespace Namesearch.Web.Components.Shared
+@typeparam TValue
+
+<div class="filter-dropdown">
+    <label class="filter-label">@Label</label>
+    <div class="select-wrapper">
+        <select class="filter-select" value="@Value" @onchange="HandleChange">
+            <option value="">@Placeholder</option>
+            @foreach (var option in Options)
+            {
+                <option value="@option.Value">@option.Text</option>
+            }
+        </select>
+        <svg class="select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Placeholder { get; set; } = "Select...";
+
+    [Parameter]
+    public TValue Value { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<TValue> ValueChanged { get; set; }
+
+    [Parameter]
+    public List<FilterOption<TValue>> Options { get; set; } = new();
+
+    private async Task HandleChange(ChangeEventArgs e)
+    {
+        var stringValue = e.Value?.ToString();
+        
+        if (typeof(TValue) == typeof(string))
+        {
+            Value = (TValue)(object)(stringValue ?? string.Empty);
+        }
+        else if (typeof(TValue) == typeof(bool?))
+        {
+            if (string.IsNullOrEmpty(stringValue))
+            {
+                Value = (TValue)(object)null!;
+            }
+            else
+            {
+                Value = (TValue)(object)bool.Parse(stringValue);
+            }
+        }
+        
+        await ValueChanged.InvokeAsync(Value);
+    }
+}
