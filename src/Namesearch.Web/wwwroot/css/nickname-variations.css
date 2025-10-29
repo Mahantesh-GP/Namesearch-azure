@@ -1,0 +1,105 @@
+/* Nickname Variations Display */
+.nickname-variations {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.1);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.variations-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.ai-icon {
+    width: 24px;
+    height: 24px;
+    color: #fff;
+    opacity: 0.9;
+}
+
+.variations-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+.variations-content {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.variations-description {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.variations-description strong {
+    color: #fff;
+    font-weight: 600;
+    padding: 0.125rem 0.375rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+.variations-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.variation-tag {
+    display: inline-block;
+    padding: 0.375rem 0.875rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s ease;
+}
+
+.variation-tag:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nickname-variations {
+        padding: 1.25rem;
+    }
+
+    .variations-title {
+        font-size: 0.9rem;
+    }
+
+    .variations-description {
+        font-size: 0.875rem;
+    }
+
+    .variation-tag {
+        font-size: 0.8125rem;
+        padding: 0.3rem 0.75rem;
+    }
+}

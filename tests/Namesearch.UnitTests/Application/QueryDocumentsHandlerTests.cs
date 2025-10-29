@@ -19,21 +19,23 @@ public class QueryDocumentsHandlerTests
         var searchService = Substitute.For<IAzureSearchService>();
         var openAIService = Substitute.For<IOpenAIService>();
         
-        var expected = new List<ResponseSummary> { new ResponseSummary { Summary = "John Doe" } } as IReadOnlyList<ResponseSummary>;
+        var expectedResults = new List<ResponseSummary> { new ResponseSummary { Summary = "John Doe" } } as IReadOnlyList<ResponseSummary>;
         var nicknameVariations = new List<string> { "john", "Johnny", "Jon" } as IReadOnlyList<string>;
         
         openAIService.GetNicknameVariationsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(nicknameVariations);
         
         searchService.SearchAsync(Arg.Any<UserQueryRequest>(), Arg.Any<CancellationToken>())
-            .Returns(expected);
+            .Returns(expectedResults);
 
         // Act
         var handler = new QueryDocuments.Handler(searchService, openAIService);
         var result = await handler.Handle(new QueryDocuments.Query(new UserQueryRequest { Query = "john" }), CancellationToken.None);
 
         // Assert
-        result.Should().BeEquivalentTo(expected);
+        result.Results.Should().BeEquivalentTo(expectedResults);
+        result.NicknameVariations.Should().BeEquivalentTo(nicknameVariations);
+        result.OriginalQuery.Should().Be("john");
         await openAIService.Received(1).GetNicknameVariationsAsync("john", Arg.Any<CancellationToken>());
         await searchService.Received(1).SearchAsync(Arg.Any<UserQueryRequest>(), Arg.Any<CancellationToken>());
     }

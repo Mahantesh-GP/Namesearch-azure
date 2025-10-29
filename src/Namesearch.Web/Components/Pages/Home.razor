@@ -48,6 +48,10 @@
             </div>
         </div>
 
+        <NicknameVariationsDisplay 
+            Variations="@searchResponse.NicknameVariations"
+            OriginalQuery="@searchResponse.OriginalQuery" />
+
         <SearchResults 
             Results="@searchResponse.Results"
             TotalCount="@searchResponse.TotalCount"

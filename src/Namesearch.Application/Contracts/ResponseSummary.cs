@@ -2,6 +2,13 @@ using System.Collections.Generic;
 
 namespace Namesearch.Application.Contracts;
 
+public sealed class SearchResultsResponse
+{
+    public IReadOnlyList<ResponseSummary> Results { get; init; } = new List<ResponseSummary>();
+    public IReadOnlyList<string> NicknameVariations { get; init; } = new List<string>();
+    public string OriginalQuery { get; init; } = string.Empty;
+}
+
 public sealed class ResponseSummary
 {
     public string Summary { get; init; } = string.Empty;

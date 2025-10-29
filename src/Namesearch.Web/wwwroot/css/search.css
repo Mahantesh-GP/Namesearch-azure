@@ -133,6 +133,60 @@ body {
     align-items: flex-end;
 }
 
+/* AI Searched Variations */
+.searched-variations {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow-md);
+}
+
+.variations-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.variations-content {
+    flex: 1;
+}
+
+.variations-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.variations-text {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.variation-badges {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.variation-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .filter-dropdown {
     flex: 1;
     min-width: 200px;

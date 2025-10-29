@@ -3,6 +3,8 @@ namespace Namesearch.Web.Models;
 public class SearchResponse
 {
     public List<SearchResult> Results { get; set; } = new();
+    public List<string> NicknameVariations { get; set; } = new();
+    public string OriginalQuery { get; set; } = string.Empty;
     public int TotalCount { get; set; }
     public int Page { get; set; }
     public int PageSize { get; set; }

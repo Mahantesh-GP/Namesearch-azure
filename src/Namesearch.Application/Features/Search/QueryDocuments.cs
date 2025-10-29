@@ -11,10 +11,10 @@ namespace Namesearch.Application.Features.Search;
 public static class QueryDocuments
 {
     // Contract
-    public sealed record Query(UserQueryRequest Request) : IRequest<IReadOnlyList<ResponseSummary>>;
+    public sealed record Query(UserQueryRequest Request) : IRequest<SearchResultsResponse>;
 
     // Handler
-    public sealed class Handler : IRequestHandler<Query, IReadOnlyList<ResponseSummary>>
+    public sealed class Handler : IRequestHandler<Query, SearchResultsResponse>
     {
         private readonly IAzureSearchService _search;
         private readonly IOpenAIService _openAI;
@@ -25,7 +25,7 @@ public static class QueryDocuments
             _openAI = openAI;
         }
 
-        public async Task<IReadOnlyList<ResponseSummary>> Handle(Query request, CancellationToken cancellationToken)
+        public async Task<SearchResultsResponse> Handle(Query request, CancellationToken cancellationToken)
         {
             // Step 1: Get nickname variations using OpenAI
             var nicknameVariations = await _openAI.GetNicknameVariationsAsync(request.Request.Query, cancellationToken);
@@ -47,7 +47,15 @@ public static class QueryDocuments
             };
 
             // Step 4: Execute the search with enriched query
-            return await _search.SearchAsync(enrichedRequest, cancellationToken);
+            var results = await _search.SearchAsync(enrichedRequest, cancellationToken);
+
+            // Step 5: Return response with variations for UI display
+            return new SearchResultsResponse
+            {
+                Results = results,
+                NicknameVariations = nicknameVariations,
+                OriginalQuery = request.Request.Query
+            };
         }
     }
 }

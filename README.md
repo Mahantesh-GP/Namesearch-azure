@@ -128,6 +128,11 @@ The application uses Azure OpenAI to enhance search results by automatically gen
 3. Search query is enriched with all variations: `"Jonathan" OR "John" OR "Johnny" OR "Jon"`
 4. Azure Search returns results matching any variation
 
+**UI Display:**
+- Nickname variations are displayed in a beautiful gradient card above search results
+- Users can see exactly which variations were used to enhance their search
+- Improves transparency and understanding of AI-assisted search
+
 **Benefits:**
 - Improved search recall - find documents even if they use different name variations
 - No manual nickname configuration needed

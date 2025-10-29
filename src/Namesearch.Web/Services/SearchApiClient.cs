@@ -34,7 +34,14 @@ public class SearchApiClient : ISearchApiClient
             var response = await _httpClient.PostAsJsonAsync("/api/search", apiRequest, cancellationToken);
             response.EnsureSuccessStatusCode();
 
-            var results = await response.Content.ReadFromJsonAsync<List<SearchResult>>(cancellationToken) ?? new List<SearchResult>();
+            var apiResponse = await response.Content.ReadFromJsonAsync<ApiSearchResponse>(cancellationToken);
+            
+            if (apiResponse == null)
+            {
+                return new SearchResponse();
+            }
+
+            var results = apiResponse.Results ?? new List<SearchResult>();
 
             // Filter by county and individual flag if specified
             if (!string.IsNullOrEmpty(request.County))
@@ -53,6 +60,8 @@ public class SearchApiClient : ISearchApiClient
             return new SearchResponse
             {
                 Results = results,
+                NicknameVariations = apiResponse.NicknameVariations ?? new List<string>(),
+                OriginalQuery = apiResponse.OriginalQuery ?? request.Query,
                 TotalCount = results.Count,
                 Page = request.Page,
                 PageSize = request.PageSize
@@ -64,4 +73,12 @@ public class SearchApiClient : ISearchApiClient
             return new SearchResponse();
         }
     }
+}
+
+// DTO for API response
+internal class ApiSearchResponse
+{
+    public List<SearchResult>? Results { get; set; }
+    public List<string>? NicknameVariations { get; set; }
+    public string? OriginalQuery { get; set; }
 }
