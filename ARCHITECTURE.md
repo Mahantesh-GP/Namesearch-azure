@@ -94,8 +94,10 @@ Here's how a search request flows through the system:
 ┌─────────────────────────────────────────────────────────────┐
 │  5. Handler (QueryDocuments.Handler)                        │
 │     - Receives Query                                        │
-│     - Calls _search.SearchAsync(request)                    │
-│     - Depends on IAzureSearchService interface              │
+│     - Calls _openAI.GetNicknameVariationsAsync(query)       │
+│     - Builds enriched query with OR across variations       │
+│     - Calls _search.SearchAsync(enrichedRequest)            │
+│     - Depends on IOpenAIService and IAzureSearchService     │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -124,6 +126,30 @@ Here's how a search request flows through the system:
 │       { "summary": "John Smith", "score": "0.72", ... }     │
 │     ]                                                       │
 └─────────────────────────────────────────────────────────────┘
+```
+
+### Sequence Diagram (AI Enrichment)
+
+```mermaid
+sequenceDiagram
+    participant UI as HTTP Client
+    participant API as API Endpoint
+    participant H as QueryDocuments.Handler
+    participant AI as IOpenAIService
+    participant S as IAzureSearchService
+    participant ACS as Azure Cognitive Search
+
+    UI->>API: POST /api/search { query }
+    API->>H: MediatR Send(Query)
+    H->>AI: GetNicknameVariationsAsync(query)
+    AI-->>H: [variations]
+    H->>H: Build enriched query (OR across variations)
+    H->>S: SearchAsync(enrichedRequest)
+    S->>ACS: Search(enrichedQuery)
+    ACS-->>S: results
+    S-->>H: mapped DTOs
+    H-->>API: results
+    API-->>UI: 200 OK [ResponseSummary]
 ```
 
 ### Code Walkthrough
@@ -181,15 +207,27 @@ public static class QueryDocuments
     public sealed class Handler : IRequestHandler<Query, IReadOnlyList<ResponseSummary>>
     {
         private readonly IAzureSearchService _search;
+        private readonly IOpenAIService _openAI;
 
-        public Handler(IAzureSearchService search) => _search = search;
+        public Handler(IAzureSearchService search, IOpenAIService openAI)
+        {
+            _search = search;
+            _openAI = openAI;
+        }
 
-        public Task<IReadOnlyList<ResponseSummary>> Handle(
+        public async Task<IReadOnlyList<ResponseSummary>> Handle(
             Query request, 
             CancellationToken cancellationToken)
         {
-            // Delegate to infrastructure service
-            return _search.SearchAsync(request.Request, cancellationToken);
+            // 1) Generate nickname variations using OpenAI
+            var variations = await _openAI.GetNicknameVariationsAsync(request.Request.Query, cancellationToken);
+
+            // 2) Enrich the query ("A" OR "B" OR ...)
+            var enrichedQuery = string.Join(" OR ", variations.Select(v => $"\"{v}\""));
+
+            // 3) Forward enriched request to Azure Search
+            var enrichedRequest = request.Request with { Query = enrichedQuery };
+            return await _search.SearchAsync(enrichedRequest, cancellationToken);
         }
     }
 }
@@ -304,6 +342,7 @@ public sealed class AzureSearchService : IAzureSearchService
 **Key Files**:
 - `Features/Search/QueryDocuments.cs` - Search use case
 - `Abstractions/IAzureSearchService.cs` - Search service interface
+- `Abstractions/IOpenAIService.cs` - Nickname generation interface
 - `Contracts/UserQueryRequest.cs` - Request DTO
 - `Contracts/ResponseSummary.cs` - Response DTO
 - `Validation/UserQueryRequestValidator.cs` - Validation rules
@@ -327,7 +366,9 @@ public sealed class AzureSearchService : IAzureSearchService
 
 **Key Files**:
 - `Search/AzureSearchService.cs` - Implements IAzureSearchService
+- `AI/OpenAIService.cs` - Implements IOpenAIService (nickname generation)
 - `Configuration/AzureSearchOptions.cs` - Strongly-typed config
+- `Configuration/OpenAIOptions.cs` - Strongly-typed OpenAI config
 - `DependencyInjection.cs` - Infrastructure services registration
 
 **Dependencies**: Application (implements interfaces), Domain, external SDKs
@@ -363,7 +404,9 @@ builder.Services.AddValidatorsFromAssemblyContaining<UserQueryRequestValidator>(
 
 // Infrastructure services get registered as interfaces:
 // - IAzureSearchService → AzureSearchService
+// - IOpenAIService → OpenAIService
 // - IOptions<AzureSearchOptions> → bound from config
+// - IOptions<OpenAIOptions> → bound from config
 ```
 
 ### Dependency Graph
@@ -380,6 +423,12 @@ IAzureSearchService (interface in Application)
 AzureSearchService (concrete in Infrastructure)
   ↓ constructor injection
 IOptions<AzureSearchOptions> + ILogger<AzureSearchService>
+
+IOpenAIService (interface in Application)
+    ↓ DI container provides
+OpenAIService (concrete in Infrastructure)
+    ↓ constructor injection
+IOptions<OpenAIOptions> + ILogger<OpenAIService>
 ```
 
 ### Configuration Binding
@@ -391,7 +440,14 @@ IOptions<AzureSearchOptions> + ILogger<AzureSearchService>
     "Endpoint": "https://<your-service>.search.windows.net/",
     "ApiKey": "<your-key>",
     "IndexName": "hybrid"
-  }
+    },
+    "OpenAI": {
+        "Endpoint": "https://<your-openai>.openai.azure.com",
+        "ApiKey": "<your-openai-key>",
+        "DeploymentName": "gpt-4",
+        "MaxTokens": 150,
+        "Temperature": 0.3
+    }
 }
 ```
 
@@ -402,6 +458,12 @@ services.AddOptions<AzureSearchOptions>()
     .ValidateDataAnnotations();
 
 services.AddSingleton<IAzureSearchService, AzureSearchService>();
+
+services.AddOptions<OpenAIOptions>()
+    .Bind(configuration.GetSection("OpenAI"))
+    .ValidateDataAnnotations();
+
+services.AddSingleton<IOpenAIService, OpenAIService>();
 ```
 
 ---
@@ -600,6 +662,8 @@ public class UserQueryRequestValidatorTests
 
 - Strongly-typed configuration (`AzureSearchOptions`)
 - Validated at startup with data annotations
+- Strongly-typed configuration for OpenAI (`OpenAIOptions`)
+- Secrets should be stored securely (e.g., Azure Key Vault), not in appsettings
 
 ### Adapter Pattern
 
