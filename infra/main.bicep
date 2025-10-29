@@ -26,6 +26,16 @@ param searchServiceEndpoint string
 @description('Azure Search Index name')
 param searchIndexName string
 
+@description('Azure OpenAI Service endpoint')
+param openAIEndpoint string
+
+@description('Azure OpenAI API Key')
+@secure()
+param openAIApiKey string
+
+@description('Azure OpenAI Deployment Name')
+param openAIDeploymentName string = 'gpt-4'
+
 // Variables
 var appServicePlanName = '${appServiceName}-plan'
 
@@ -78,6 +88,26 @@ resource appService 'Microsoft.Web/sites@2023-01-01' = {
         {
           name: 'AzureSearch__IndexName'
           value: searchIndexName
+        }
+        {
+          name: 'OpenAI__Endpoint'
+          value: openAIEndpoint
+        }
+        {
+          name: 'OpenAI__ApiKey'
+          value: openAIApiKey
+        }
+        {
+          name: 'OpenAI__DeploymentName'
+          value: openAIDeploymentName
+        }
+        {
+          name: 'OpenAI__MaxTokens'
+          value: '150'
+        }
+        {
+          name: 'OpenAI__Temperature'
+          value: '0.7'
         }
       ]
     }

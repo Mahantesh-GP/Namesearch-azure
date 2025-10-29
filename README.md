@@ -7,6 +7,7 @@ A modern, full-stack name search application built with Clean Architecture, feat
 ## Features
 
 - ✨ Modern, responsive Blazor UI with real-time search
+- 🤖 **AI-Powered Nickname Variations** - Uses Azure OpenAI to generate nickname variations for enhanced search results
 - 🔍 Advanced filtering (County, Individual Flag)
 - 🏗️ Clean Architecture with SOLID principles
 - 🎯 CQRS pattern with MediatR
@@ -59,7 +60,7 @@ git clone https://github.com/Mahantesh-GP/Namesearch-azure.git
 cd NamesearchTemplate
 ```
 
-2. **Configure Azure Search**
+2. **Configure Azure Search and OpenAI**
    
    Update `src/Namesearch.Api/appsettings.Development.json`:
 ```json
@@ -69,6 +70,13 @@ cd NamesearchTemplate
     "Endpoint": "https://your-search-service.search.windows.net",
     "IndexName": "your-index-name",
     "ApiKey": "your-api-key"
+  },
+  "OpenAI": {
+    "Endpoint": "https://your-openai-service.openai.azure.com",
+    "ApiKey": "your-openai-api-key",
+    "DeploymentName": "gpt-4",
+    "MaxTokens": 150,
+    "Temperature": 0.3
   }
 }
 ```
@@ -109,6 +117,25 @@ The application includes three main reusable components:
 - Loading and empty states
 
 See [Web UI README](src/Namesearch.Web/README.md) for detailed component documentation.
+
+## AI-Powered Nickname Variations
+
+The application uses Azure OpenAI to enhance search results by automatically generating nickname variations:
+
+**How it works:**
+1. User enters a name (e.g., "Jonathan")
+2. OpenAI generates nickname variations (e.g., ["Jonathan", "John", "Johnny", "Jon"])
+3. Search query is enriched with all variations: `"Jonathan" OR "John" OR "Johnny" OR "Jon"`
+4. Azure Search returns results matching any variation
+
+**Benefits:**
+- Improved search recall - find documents even if they use different name variations
+- No manual nickname configuration needed
+- Automatically handles cultural variations and common nicknames
+
+**Example:**
+- Search for "Bob" → Also finds "Robert", "Bobby", "Roberto"
+- Search for "Liz" → Also finds "Elizabeth", "Beth", "Lizzie"
 
 ## API Endpoints
 

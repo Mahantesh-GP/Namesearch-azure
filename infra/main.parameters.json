@@ -16,6 +16,15 @@
     },
     "searchIndexName": {
       "value": "YOUR_INDEX_NAME"
+    },
+    "openAIEndpoint": {
+      "value": "https://YOUR_OPENAI_SERVICE.openai.azure.com/"
+    },
+    "openAIApiKey": {
+      "value": "YOUR_OPENAI_API_KEY"
+    },
+    "openAIDeploymentName": {
+      "value": "gpt-4"
     }
   }
 }

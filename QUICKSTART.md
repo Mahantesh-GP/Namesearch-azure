@@ -2,7 +2,7 @@
 
 ## 🚀 Run Locally in 3 Steps
 
-### Step 1: Configure Azure Search
+### Step 1: Configure Azure Search and OpenAI
 Edit `src/Namesearch.Api/appsettings.Development.json`:
 ```json
 {
@@ -11,6 +11,13 @@ Edit `src/Namesearch.Api/appsettings.Development.json`:
     "Endpoint": "https://your-service.search.windows.net",
     "IndexName": "your-index",
     "ApiKey": "your-key"
+  },
+  "OpenAI": {
+    "Endpoint": "https://your-openai.openai.azure.com",
+    "ApiKey": "your-openai-key",
+    "DeploymentName": "gpt-4",
+    "MaxTokens": 150,
+    "Temperature": 0.3
   }
 }
 ```
@@ -35,7 +42,10 @@ Edit `infra/main.parameters.json`:
   "parameters": {
     "searchServiceName": { "value": "your-search-service" },
     "searchServiceEndpoint": { "value": "https://your-search.search.windows.net" },
-    "searchIndexName": { "value": "your-index" }
+    "searchIndexName": { "value": "your-index" },
+    "openAIEndpoint": { "value": "https://your-openai.openai.azure.com" },
+    "openAIApiKey": { "value": "your-openai-key" },
+    "openAIDeploymentName": { "value": "gpt-4" }
   }
 }
 ```

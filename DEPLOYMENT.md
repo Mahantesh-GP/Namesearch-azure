@@ -17,7 +17,7 @@ This application combines a Blazor Server UI and Web API into a single ASP.NET C
 
 ### Running Locally
 
-1. Update `appsettings.Development.json` in `Namesearch.Api` with your Azure Search configuration:
+1. Update `appsettings.Development.json` in `Namesearch.Api` with your Azure Search and OpenAI configuration:
 ```json
 {
   "AzureSearch": {
@@ -25,6 +25,13 @@ This application combines a Blazor Server UI and Web API into a single ASP.NET C
     "Endpoint": "https://your-search-service.search.windows.net",
     "IndexName": "your-index-name",
     "ApiKey": "your-api-key"
+  },
+  "OpenAI": {
+    "Endpoint": "https://your-openai-service.openai.azure.com",
+    "ApiKey": "your-openai-api-key",
+    "DeploymentName": "gpt-4",
+    "MaxTokens": 150,
+    "Temperature": 0.3
   }
 }
 ```
@@ -47,7 +54,17 @@ dotnet run
 ### Option 1: Deploy using Azure CLI
 
 1. **Update parameters file**:
-   Edit `infra/main.parameters.json` with your Azure Search details.
+   Edit `infra/main.parameters.json` with your Azure Search and OpenAI details:
+   ```json
+   {
+     "searchServiceName": { "value": "your-search-service" },
+     "searchIndexName": { "value": "your-index-name" },
+     "searchApiKey": { "value": "your-search-api-key" },
+     "openAIEndpoint": { "value": "https://your-openai-service.openai.azure.com" },
+     "openAIApiKey": { "value": "your-openai-api-key" },
+     "openAIDeploymentName": { "value": "gpt-4" }
+   }
+   ```
 
 2. **Create a resource group**:
 ```powershell
@@ -96,10 +113,21 @@ az webapp deployment source config-zip `
 ## Configuration
 
 ### Required App Settings (Azure)
+
+**Azure Search:**
 - `AzureSearch__ServiceName`: Your Azure Search service name
 - `AzureSearch__Endpoint`: Your Azure Search endpoint
 - `AzureSearch__IndexName`: Your search index name
 - `AzureSearch__ApiKey`: Your Azure Search API key (or use Managed Identity)
+
+**Azure OpenAI:**
+- `OpenAI__Endpoint`: Your Azure OpenAI endpoint (e.g., https://your-openai.openai.azure.com)
+- `OpenAI__ApiKey`: Your Azure OpenAI API key
+- `OpenAI__DeploymentName`: Your GPT model deployment name (e.g., gpt-4)
+- `OpenAI__MaxTokens`: Maximum tokens for nickname generation (default: 150)
+- `OpenAI__Temperature`: Temperature for nickname generation (default: 0.3)
+
+**Application:**
 - `ApiBaseUrl`: The base URL of your deployed app (e.g., https://your-app.azurewebsites.net)
 
 ### Using Managed Identity (Recommended)
